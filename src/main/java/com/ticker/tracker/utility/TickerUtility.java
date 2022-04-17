@@ -14,7 +14,7 @@ public class TickerUtility {
     private static SmartConnect connection = null;
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static Calendar cal = Calendar.getInstance();
-    public static SmartConnect getConnection(String apiKey,String clientID, String loginPassword){
+    public static synchronized SmartConnect getConnection(String apiKey,String clientID, String loginPassword){
         if(connection==null){
             SmartConnect smartConnect = new SmartConnect(apiKey);
             User user = smartConnect.generateSession(clientID, loginPassword);
@@ -25,7 +25,7 @@ public class TickerUtility {
         return connection;
     }
 
-    public static Date getDateFromString(String str){
+    public static synchronized Date getDateFromString(String str){
         Date date = null;
         try{
             date = formatter.parse(str);
@@ -35,7 +35,7 @@ public class TickerUtility {
         return date;
     }
 
-    public static Date performDateOperation(Date date, int field,int amount){
+    public static synchronized  Date performDateOperation(Date date, int field,int amount){
         cal.setTime(date);
         cal.add(field, amount);
         return cal.getTime();
@@ -57,7 +57,7 @@ public class TickerUtility {
         }
     }
 
-    public static Date getBeforeDate(Date firstDate, Date secondDate){
+    public static synchronized Date getBeforeDate(Date firstDate, Date secondDate){
         try {
             if (firstDate.before(secondDate)) {
                 return firstDate;
@@ -70,7 +70,7 @@ public class TickerUtility {
         return null;
     }
 
-    public static boolean isFutureDate(Date date){
+    public static synchronized  boolean isFutureDate(Date date){
         Date currentDate = new Date();
         boolean isFutureDate=false;
         try {
@@ -83,11 +83,11 @@ public class TickerUtility {
         return isFutureDate;
     }
 
-    public static String getFormattedDate(Date date){
+    public static synchronized String getFormattedDate(Date date){
         return formatter.format(date);
     }
 
-    public static Optional<Object> getCandleData(SmartConnect smartConnect, CandleDetails candleDetails){
+    public static synchronized Optional<Object> getCandleData(SmartConnect smartConnect, CandleDetails candleDetails){
         JSONObject jsonObj = new JSONObject(candleDetails);
         Optional<Object> obj = null;
         try {
@@ -109,17 +109,17 @@ public class TickerUtility {
         }
     }
 
-    public static int getWeekOfYear(String date){
+    public static synchronized int getWeekOfYear(String date){
         cal.setTime(getDateFromString(date));
         return cal.get(Calendar.WEEK_OF_YEAR);
     }
 
-    public static int getYear(String date){
+    public static synchronized int getYear(String date){
         cal.setTime(getDateFromString(date));
         return cal.get(Calendar.YEAR);
     }
 
-    public static int getMonth(String date){
+    public static synchronized int getMonth(String date){
         cal.setTime(getDateFromString(date));
         return cal.get(Calendar.MONTH);
     }
