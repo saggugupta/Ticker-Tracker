@@ -136,7 +136,7 @@ public class TickerServiceImpl implements ITickerService{
         };
         for (Candle tempCandle: candleList) {
             String key = fun.apply(tempCandle.getDateTime());
-            System.out.println(" Key :- " + key);
+            //System.out.println(" Key :- " + key);
             if(map.containsKey(key)){
                 Candle existingCandle = map.get(key);
                 //existingCandle.setOpen(Math.min(existingCandle.getOpen(),tempCandle.getOpen()));
@@ -148,7 +148,7 @@ public class TickerServiceImpl implements ITickerService{
                 map.put(key,tempCandle);
             }
         }
-        System.out.println(map);
+        //System.out.println(map);
         List<Candle> resultList = new ArrayList<>();
         for(Map.Entry<String,Candle> entry : map.entrySet()){
             resultList.add(entry.getValue());
