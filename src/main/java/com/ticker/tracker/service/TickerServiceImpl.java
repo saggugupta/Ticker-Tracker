@@ -13,6 +13,8 @@ import com.ticker.tracker.utility.TickerUtility;
 import okhttp3.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,10 +27,14 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
 public class TickerServiceImpl implements ITickerService{
+    Logger logger = LoggerFactory.getLogger(TickerServiceImpl.class);
+
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -49,24 +55,51 @@ public class TickerServiceImpl implements ITickerService{
     @Override
     public void getMarginData() {
        Ticker[] tickerArr =  restTemplate.getForObject("http://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json", Ticker[].class);
-       tickerDAO.saveAll(Arrays.asList(tickerArr));
+       List<Ticker> existingTickers = tickerDAO.findAll();
+       List<Ticker> updateTickerList = new ArrayList<>();
+       List<Ticker> insertTickerList = new ArrayList<>();
+       Map<String,Ticker> existingTickerMap = existingTickers.stream().collect(Collectors.toMap(x->x.getSymbol()+"_"+x.getName()+"_"+x.getToken(),y->y,(old,newVal)->{return newVal;}));
+
+           for (Ticker tick : tickerArr) {
+               if (existingTickerMap.containsKey(tick.getSymbol() + "_" + tick.getName() + "_" + tick.getToken())) {
+                   Ticker tempTicker = existingTickerMap.get(tick.getSymbol() + "_" + tick.getName() + "_" + tick.getToken());
+                   if (tempTicker != null && !tempTicker.equals(tick)) {
+                       tempTicker.setToken(tick.getToken());
+                       tempTicker.setSymbol(tick.getSymbol());
+                       tempTicker.setName(tick.getName());
+                       tempTicker.setExpiry(tick.getExpiry());
+                       tempTicker.setStrike(tick.getStrike());
+                       tempTicker.setLotSize(tick.getLotSize());
+                       tempTicker.setInstrumentType(tick.getInstrumentType());
+                       tempTicker.setExchangeSegment(tick.getExchangeSegment());
+                       tempTicker.setTickSize(tick.getTickSize());
+                       updateTickerList.add(tempTicker);
+                   }
+               } else {
+                   insertTickerList.add(tick);
+               }
+           }
+       tickerDAO.saveAll(updateTickerList);
+       tickerDAO.saveAll(insertTickerList);
+       //tickerDAO.saveAll(Arrays.asList(tickerArr));
        System.out.println("No of tickers:- " + tickerArr.length);
     }
 
     @Override
     public List<Candle> getCandles(CandleDetails candleDetails) {
+        logger.info("inside service getCandles");
         List<Candle> candleList = new ArrayList<Candle>();
         Date currentDate = new Date();
         try {
             Date startDate = TickerUtility.getDateFromString(candleDetails.getFromdate());
-            System.out.println(startDate);
+            logger.info("start date :- " + startDate);
             Date endDate = TickerUtility.getDateFromString(candleDetails.getTodate());
-            System.out.println(endDate);
+            logger.info("end date :- " +endDate);
             if(TickerUtility.isSupportedInterval(candleDetails.getInterval())) {
                 SmartConnect smartConnect = TickerUtility.getConnection(apiKey,clientID,loginPassword);
                 int noOfDays = TickerUtility.getDaysCount(candleDetails.getInterval());
                 Date tempDate = TickerUtility.performDateOperation(startDate, Calendar.DAY_OF_MONTH, noOfDays);
-                System.out.println("After noOfDays:- " + noOfDays + " date: " + tempDate);
+                logger.info("After noOfDays:- " + noOfDays + " date: " + tempDate);
                 Date tempEndDate = TickerUtility.getBeforeDate(tempDate, endDate);
                 if (TickerUtility.isFutureDate(tempEndDate)) {
                     tempEndDate = currentDate;
@@ -76,7 +109,7 @@ public class TickerServiceImpl implements ITickerService{
                 while (flag) {
                     candleDetails.setFromdate(TickerUtility.getFormattedDate(startDate));
                     candleDetails.setTodate(TickerUtility.getFormattedDate(tempEndDate));
-                    System.out.println("start date :- " + candleDetails.getFromdate() + " end date:- " + candleDetails.getTodate());
+                    logger.info("Candle token :- " + candleDetails.getSymboltoken() +" start date :- " + candleDetails.getFromdate() + " end date:- " + candleDetails.getTodate());
 
                     try {
                         Optional<Object> data = TickerUtility.getCandleData(smartConnect, candleDetails);
@@ -96,7 +129,7 @@ public class TickerServiceImpl implements ITickerService{
                             candleList.add(candle);
                         }
                     } catch (Exception ex) {
-                        System.out.println("Getting the Exception :- " + ex.getMessage());
+                         ex.printStackTrace();
                     }
                     if (tempEndDate.before(endDate)) {
                         startDate = TickerUtility.performDateOperation(tempEndDate, Calendar.DAY_OF_MONTH, 1);
