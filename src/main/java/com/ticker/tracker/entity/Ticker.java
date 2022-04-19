@@ -40,14 +40,7 @@ public class Ticker {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ticker ticker = (Ticker) o;
-        boolean result = Float.compare(ticker.strike, strike) == 0 && lotSize == ticker.lotSize && Float.compare(ticker.tickSize, tickSize) == 0 && Objects.equals(token, ticker.token) && Objects.equals(symbol, ticker.symbol) && Objects.equals(name, ticker.name) && Objects.equals(expiry, ticker.expiry) && Objects.equals(instrumentType, ticker.instrumentType) && Objects.equals(exchangeSegment, ticker.exchangeSegment);
-        if(result){
-            System.out.println();
-        }else{
-            System.out.println(ticker.toString());
-            System.out.println(this.toString());
-        }
-        return result;
+        return Float.compare(ticker.strike, strike) == 0 && lotSize == ticker.lotSize && Float.compare(ticker.tickSize, tickSize) == 0 && Objects.equals(token, ticker.token) && Objects.equals(symbol, ticker.symbol) && Objects.equals(name, ticker.name) && Objects.equals(expiry, ticker.expiry) && Objects.equals(instrumentType, ticker.instrumentType) && Objects.equals(exchangeSegment, ticker.exchangeSegment);
     }
 
     @Override
