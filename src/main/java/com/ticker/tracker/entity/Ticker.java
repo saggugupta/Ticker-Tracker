@@ -19,7 +19,8 @@ import java.util.Objects;
 })
 public class Ticker {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "batchgenerator")
+    @GenericGenerator(name = "batchgenerator" , strategy = "increment")
     Long id;
     String token;
     String symbol;
