@@ -181,7 +181,7 @@ public class TickerServiceImpl implements ITickerService{
                 map.put(key,tempCandle);
             }
         }
-        //System.out.println(map);
+        System.out.println(map);
         List<Candle> resultList = new ArrayList<>();
         for(Map.Entry<String,Candle> entry : map.entrySet()){
             resultList.add(entry.getValue());
