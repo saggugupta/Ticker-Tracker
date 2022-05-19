@@ -1,4 +1,5 @@
 # Maven package Java project Web App to Linux on Azure
+
 # Build your Java project and deploy it to Azure as a Linux web app
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
@@ -45,6 +46,11 @@ stages:
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
 
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 - stage: Deploy
   displayName: Deploy stage
   dependsOn: Build
