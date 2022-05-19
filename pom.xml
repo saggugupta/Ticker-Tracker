@@ -94,7 +94,7 @@
 			<artifactId>smart-api-java</artifactId>
 			<scope>system</scope>
 			<version>1.0</version>
-			<systemPath>${basedir}\src\lib\smartapi-java-1.0.0.jar</systemPath>
+			<systemPath>${basedir}/src/lib/smartapi-java-1.0.0.jar</systemPath>
 		</dependency>
 	</dependencies>
 
